@@ -1,0 +1,11 @@
+PORT=3000
+LOCAL_ENV=localhost
+RC_SERVER=https://platform.devtest.ringcentral.com
+RC_APP_KEY=YourAppAPIKey
+RC_APP_SECRET=YourAppSecret
+RC_USERNAME=SandboxAccountUsername
+RC_PASSWORD=SandboxAccountPassword
+RC_EXTENSION=
+
+DELIVERY_MODE_ADDRESS=YOUR_WEBSERVER_POST_HOOK_OR_NGROK_FORWARDING/webhooks
+DELIVERY_MODE_TRANSPORT_TYPE=WebHook
