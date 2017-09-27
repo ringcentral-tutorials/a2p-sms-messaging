@@ -1,4 +1,4 @@
-# a2p-sms-messaging
+# A2P-SMS-Messaging
 - Build a currency converter service using RingCentral SMS framework.
 - This demo project shows how to use RingCentral SMS and Push Notification APIs to implement a SMS bot. The bot will listen for incoming SMS text commands then reply to the sender with relevant content.
 > Text commands:
