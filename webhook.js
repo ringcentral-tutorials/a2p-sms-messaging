@@ -123,8 +123,6 @@ function readRegisteredSubscription(subscriptionId) {
         var data = response.json();
         if (data.records.length > 0){
           for(var record of data.records) {
-            console.log(record)
-            //return deleteSubscription(record.id)
             if (record.id == subscriptionId) {
               if (record.deliveryMode.transportType == "WebHook"){
                 if (record.status !== "Active"){
@@ -154,13 +152,12 @@ function parseResponse(jsonObj) {
     // for testing with sandbox account. We remove the watermark text
     var watermark = "Test SMS using a RingCentral Developer account - "
     var index = command.indexOf(watermark)
-    var payload = command;
     if (index > -1) {
-        payload = command.substr(watermark.length, command.length)
+        command = command.substr(watermark.length, command.length)
     }
-    payload = payload.toLowerCase().trim()
+    command = command.toLowerCase().trim()
 
-    if (payload == "?" || payload == "help") {
+    if (command == "?" || command == "help") {
         var response = 'For currency symbols, send "symbol/n", where "n" is the first alphabet letter of a country name.\nFor exchange rate, send e.g. "eur/usd", where "eur" is the base and "usd" is the target.';
         return platform
             .post('/account/~/extension/~/sms', {
@@ -171,8 +168,8 @@ function parseResponse(jsonObj) {
             .then(function (response) {
 
             });
-    } else if (payload.includes('/')) {
-        var currencies = payload.split("/");
+    } else if (command.includes('/')) {
+        var currencies = command.split("/");
         var currencyBase = currencies[0].trim().toUpperCase();
         var currencyTarget = currencies[1].trim().toUpperCase();
         if (currencyBase == "SYMBOL") {
