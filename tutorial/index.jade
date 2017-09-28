@@ -45,24 +45,24 @@
 
       If the DELIVERY_MODE_TRANSPORT_TYPE is specified with "WebHook", we create a http server with a callback function to handle HTTP requests.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='8-15')
+  .step(data-title='Instantiate RingCentral SDK', data-file='webhook.js', data-highlight='8-15')
     :markdown
       ## Instantiate the RingCentral Node JS SDK
       First, we create the SDK instance `rcsdk` and initialize it with the AppKey and AppSecret.
 
       Then we call the `rcsdk.platform()` function to get the instance of the platform component. The `platform` instance will be used later to login and call RingCentral APIs.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='18-32')
+  .step(data-title='Login to RingCentral account', data-file='webhook.js', data-highlight='18-32')
     :markdown
       ## Login to RingCentral account
       To login RingCentral account, we call the `platform.login()` function with the given account's username and password.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='24-26')
+  .step(data-title='Implement Notification Subscription', data-file='webhook.js', data-highlight='24-26')
     :markdown
       ## Implement notification subscription
       After logged in successfully, we get ready to subscribe for Webhook notifications so that we can receive incoming SMS messages.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='55-63')
+  .step(data-title='Create Notification Subscription', data-file='webhook.js', data-highlight='55-63')
     :markdown
       ## Create notification subscription
       Before creating a new subscription for notification, we may need to detect if we have created one earlier. This step is necessary because the app could be terminated and rerun for any reason.
@@ -73,7 +73,7 @@
 
       When we rerun the app, we may already had the subscription registered previously. In that case, we read the __subscriptionId__ from the local file, then we will call the `readRegisteredSubscription(data)` function with the __subscriptionId__ to handle the existing subscription.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='65-91')
+  .step(data-title='Subscribe for Notifications', data-file='webhook.js', data-highlight='65-91')
     :markdown
       ## Subscribe for notifications
       RingCentral push notification supports multiple events notification. This means that we can subscribe for notifications of several different events such as when there is an incoming SMS, when a SMS message is deleted, when there is an incoming call etc. in a single subscription.
@@ -86,7 +86,7 @@
 
       That is all we need to setup for the notification subscription using Webhook.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='93-121')
+  .step(data-title='Renew Webhook Notification', data-file='webhook.js', data-highlight='93-121')
     :markdown
       ## Renew Webhook notification
       In the other scenario, if we rerun the app and already had the __subscriptionId__. We will call the `readRegisteredSubscription(data)` to handle the existing subscription.
@@ -99,14 +99,14 @@
 
       That is all for the renew notification subscription using Webhook.
 
-  .step(data-title='Use Webhook', data-file='index.js', data-highlight='12-19')
+  .step(data-title='Receive Webhook POST message', data-file='index.js', data-highlight='12-19')
     :markdown
       ## Receive Webhook POST message
       Whenever there is an incoming SMS, RingCentral will send a notification to the subscriber via the provided Webhook address.
 
       We just do a quick check to see if the POST url is our predefined "/webhooks" path. If it matches, then we call the `rc_server.handleWebhooksPost(req, res)` function to handle the request.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='33-52')
+  .step(data-title='Read the SMS message', data-file='webhook.js', data-highlight='33-52')
     :markdown
       ## Read the SMS message
       Looking at the code on the right-hand side, you can ignore the validateToken part. That is for validating the token when we registered for the subscription.
@@ -115,7 +115,7 @@
 
       Then we call the `parseMessage()` with the data to process the SMS message.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='147-157')
+  .step(data-title='Parse the SMS message', data-file='webhook.js', data-highlight='147-157')
     :markdown
       ## Parse the SMS message
       Now, we extract the phone number of the sender. We will use the number for sending a message back to the sender.
@@ -124,7 +124,7 @@
 
       __Note__: Because we are testing with a RingCentral sandbox account, there is a watermark text attached to the text message. To work-around this in our demo, we suppress the watermark text before handling the command.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='158-197')
+  .step(data-title='Compose a reply message', data-file='webhook.js', data-highlight='158-197')
     :markdown
       ## Compose a reply message
       We use the command syntax for creating an appropriated reply message.
@@ -139,7 +139,7 @@
 
       If the text command does not match with our command syntax, we compose an error message.
 
-  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='199-208')
+  .step(data-title='Send a SMS message', data-file='webhook.js', data-highlight='199-208')
     :markdown
       ## Send a SMS message
       We use the `platform.post()` function to call the SMS API with the specified parameters:
@@ -163,13 +163,13 @@
 
       `DELIVERY_MODE_TRANSPORT_TYPE=PubNub`
 
-  .step(data-title='Use PubNub', data-file='index.js', data-highlight='21-24')
+  .step(data-title='Use PubNub Notification', data-file='index.js', data-highlight='21-24')
     :markdown
       ## Use PubNub notification
 
       If the DELIVERY_MODE_TRANSPORT_TYPE is specified with "PubNub", we create a http server and load the __pubnub.js__ file accordingly.
 
-  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='8-21')
+  .step(data-title='Instantiate the RingCentral SDK', data-file='pubnub.js', data-highlight='8-21')
     :markdown
       ## Instantiate the RingCentral Node JS SDK
       First, we create the SDK instance `rcsdk` and initialize it with the AppKey and appSecret.
@@ -178,17 +178,17 @@
 
       We also call the `rcsdk.createSubscription()` function to create a `subscription` instance and implement an event handler function to receive notification events.
 
-  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='23-38')
+  .step(data-title='Login RingCentral Account', data-file='pubnub.js', data-highlight='23-38')
     :markdown
       ## Login RingCentral account
       To login RingCentral account, we call the `platform.login()` function with the given account's username and password.
 
-  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='29-31')
+  .step(data-title='Implement Notification Subscription', data-file='pubnub.js', data-highlight='29-31')
     :markdown
       ## Implement notification subscription
       After logged in successfully, we get ready to subscribe for PubNub notification so that we can receive incoming SMS messages.
 
-  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='40-48')
+  .step(data-title='Create Notification Subscription', data-file='pubnub.js', data-highlight='40-48')
     :markdown
       ## Create notification subscription
       Before creating a new subscription for notification, we may need to detect if we have created one earlier. This step is necessary because the app could be terminated and rerun for any reason.
@@ -199,7 +199,7 @@
 
       When we rerun the app, we may already had the subscription registered previously. In that case, we read the __subscriptionId__ from the local file, then we will call the `readRegisteredSubscription(data)` function with the __subscriptionId__ to handle the existing subscription.
 
-  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='59-73')
+  .step(data-title='Subscribe for Notifications', data-file='pubnub.js', data-highlight='59-73')
     :markdown
       ## Subscribe for notifications
       RingCentral push notification supports multiple events notification. This means that we can subscribe for notifications of several different events such as when there is an incoming SMS, when a SMS message is deleted, when there is an incoming call etc. in a single subscription.
@@ -212,18 +212,18 @@
 
       That is all we need to setup for the notification subscription with PubNub.
 
-  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='87-106')
+  .step(data-title='Delete PubNub notification', data-file='pubnub.js', data-highlight='87-106')
     :markdown
       ## Renew PubNub notification
       Currently, a registered PubNub subscription will expire after 15 minutes. When a subscription expires, it's status will be in `Suspended` and RingCentral server will stop sending notification to that subscriber. Fortunately, the Node JS SDK has an auto renewal feature so that we don't need to renew the subscription manually.
 
       When using PubNub notification, if we rerun the app, any subscription created by this app earlier will not be valid for the new process anymore. Thus, we will need to detect the old registered subscription and delete them, then create new subscription for the new process.
 
-  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='17-20')
+  .step(data-title='Receive PubNub Notification', data-file='pubnub.js', data-highlight='17-20')
     :markdown
       ## Receive PubNub notification message
       Whenever there is an incoming SMS, RingCentral will send a notification to the subscriber and we'll get notified via this function.
 
       Then we call the `parseMessage()` with the data to process the SMS message.
 
-      We will process the SMS message the same way as we did in the Use Webhook sections.
+      We will process the SMS message the same way as we did in the Use WebHook sections.
