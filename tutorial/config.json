@@ -1,0 +1,6 @@
+{
+    "title": "Build your A2P SMS Messaging",
+    "repo": "ringcentral-tutorials/a2p-sms-messaging",
+    "description": "Learn how to build an A2P SMS messaging app using RingCentral Messaging APIs. Click the \"Start Tutorial\" button below to start.",
+    "heroku": false
+}

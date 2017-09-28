@@ -13,14 +13,13 @@ var rcsdk = new RC({
 });
 
 var platform = rcsdk.platform();
-
 var subscription = rcsdk.createSubscription();
 // event notification via PubNub
 subscription.on(subscription.events.notification, function(msg) {
-    parseResponse(msg.body);
+    parseMessage(msg.body);
 });
 
-var self = module.exports = {
+module.exports = {
      login: function () {
         platform.login({
                 username: process.env.RC_USERNAME,
@@ -28,17 +27,17 @@ var self = module.exports = {
                 extension: process.env.RC_EXTENSION
             })
             .then(function(authResponse) {
-                readSavedSubscriptionId()
+                subscribeForNotification()
             })
             .catch(function(e) {
                 console.log("Failed login");
                 console.error(e);
                 throw e;
             });
-    },
+    }
 };
 
-function readSavedSubscriptionId(){
+function subscribeForNotification(){
   fs.readFile('subscriptionId.txt', 'utf8', function (err,data) {
     if (err) {
         startPubNubSubscription()
@@ -106,31 +105,22 @@ function readRegisteredSubscription(subscriptionId) {
       });
 }
 
-function parseResponse(jsonObj) {
-    var toNumber = jsonObj['from']['phoneNumber'];
-    var command = jsonObj['subject'];
+function parseMessage(message) {
+    var toNumber = message['from']['phoneNumber'];
+    var command = message['subject'];
     // for testing with sandbox account. We remove the watermark text
     var watermark = "Test SMS using a RingCentral Developer account - "
     var index = command.indexOf(watermark)
-    var payload = command;
     if (index > -1) {
-        payload = command.substr(watermark.length, command.length)
+        command = command.substr(watermark.length, command.length)
     }
-    payload = payload.toLowerCase().trim()
+    command = command.toLowerCase().trim()
 
-    if (payload == "?" || payload == "help") {
+    if (command == "?" || command == "help") {
         var response = 'For currency symbols, send "symbol/n", where "n" is the first alphabet letter of a country name.\nFor exchange rate, send e.g. "eur/usd", where "eur" is the base and "usd" is the target.';
-        return platform
-            .post('/account/~/extension/~/sms', {
-                from: {'phoneNumber': process.env.RC_USERNAME},
-                to: [{'phoneNumber': toNumber}],
-                text: response
-            })
-            .then(function (response) {
-
-            });
-    } else if (payload.includes('/')) {
-        var currencies = payload.split("/");
+        return sendSMSMessage(toNumber, response)
+    } else if (command.includes('/')) {
+        var currencies = command.split("/");
         var currencyBase = currencies[0].trim().toUpperCase();
         var currencyTarget = currencies[1].trim().toUpperCase();
         if (currencyBase == "SYMBOL") {

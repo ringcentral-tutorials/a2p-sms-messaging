@@ -8,10 +8,7 @@ var port = process.env.PORT || 5000
 
 var rc_server = null
 var server = null
-if (process.env.DELIVERY_MODE_TRANSPORT_TYPE == "PubNub"){
-  server = http.createServer()
-  rc_server = require('./pubnub')
-}else {
+if (process.env.DELIVERY_MODE_TRANSPORT_TYPE == "WebHook"){
   server = http.createServer(function(req, res) {
       if (req.method == 'POST') {
         if (req.url == "/webhooks")
@@ -21,6 +18,9 @@ if (process.env.DELIVERY_MODE_TRANSPORT_TYPE == "PubNub"){
       }
   });
   rc_server = require('./webhook')
+}else { // Use PubNub
+  server = http.createServer()
+  rc_server = require('./pubnub')
 }
 server.listen(port);
 rc_server.login()

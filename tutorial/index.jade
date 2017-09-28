@@ -1,0 +1,229 @@
+.chapter(data-title='A2P-SMS-Messaging Tutorial')
+  .step(data-title='Welcome!', data-file='README.md', data-highlight='1-8')
+    :markdown
+      ## Welcome to the tutorial
+
+      This tutorial shows how to use RingCentral SMS and Push Notification APIs to implement a SMS bot. The bot will listen for incoming text commands then reply to the sender with relevant content.
+      ### Text commands syntax:
+      * __?__ Or __help__ for help.
+      * __symbol/n__ for getting a list of foreign currency symbols, where n is the first alphabet of a country’s name.
+      * __base/target__ for getting a current exchange rate, where target is the currency symbol to be quoted against the base currency symbol.
+
+      ### Requirements
+      You must have a RingCentral developer account. If you don't have one, click [here](https://developer.ringcentral.com) to create a free developer account.
+
+      You also have to [create a RingCentral app](https://developer.ringcentral.com/library/getting-started.html) with the "SMS" and "Webhook Subscriptions" permissions. And retrieve the AppKey and AppSecret for using with this tutorial.
+
+  .step(data-title='Project setup', data-file='README.md')
+    :markdown
+      ## Clone the project from GitHub
+      Run the commands below to clone the project from GitHub
+
+      `git clone https://github.com/ringcentral-tutorials/a2p-sms-messaging`
+
+      `cd a2p-sms-messaging`
+
+      `npm intall --save`
+
+  .step(data-title='Set environment', data-file='dotenv')
+    :markdown
+      ## Specify environment parameters
+
+      Rename the dotenv to .env and provide your app credentials, RingCentral sandbox account's username and password.
+
+      * __Note__: The username is the account number and it is also the phone number we will use to send SMS from. If you want to use another number under this account, you can create a new variable and specify the phone number and use that number for sending SMS instead.
+
+      We will start the tutorial with Webhook notification. Then we will discuss about using PubNub later.
+
+      Replace this "YOUR_WEBHOOK_ADDRESS" with your webhook address
+
+      If you run the app in a localhost, you can use [ngrok](https://ngrok.com/download) to get an address
+
+  .step(data-title='Use Webhook', data-file='index.js', data-highlight='11-21')
+    :markdown
+      ## Let's start with Webhook notification
+
+      If the DELIVERY_MODE_TRANSPORT_TYPE is specified with "WebHook", we create a http server with a callback function to handle HTTP requests.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='8-15')
+    :markdown
+      ## Instantiate the RingCentral Node JS SDK
+      First, we create the SDK instance `rcsdk` and initialize it with the AppKey and AppSecret.
+
+      Then we call the `rcsdk.platform()` function to get the instance of the platform component. The `platform` instance will be used later to login and call RingCentral APIs.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='18-32')
+    :markdown
+      ## Login to RingCentral account
+      To login RingCentral account, we call the `platform.login()` function with the given account's username and password.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='24-26')
+    :markdown
+      ## Implement notification subscription
+      After logged in successfully, we get ready to subscribe for Webhook notifications so that we can receive incoming SMS messages.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='55-63')
+    :markdown
+      ## Create notification subscription
+      Before creating a new subscription for notification, we may need to detect if we have created one earlier. This step is necessary because the app could be terminated and rerun for any reason.
+
+      When a push notification subscription is registered successfully, we will receive a response with the subscription ID. We will save the subscription ID locally (in this project we save it in the subscriptionId.txt file) so that we can use it to handle (renew, delete etc.) the registered subscription.
+
+      When we run the app for the first time, we don't have the __subscriptionId__ (or the file does not exists), we will call the `startWebhookSubscription()` function, where we will register for a new subscription.
+
+      When we rerun the app, we may already had the subscription registered previously. In that case, we read the __subscriptionId__ from the local file, then we will call the `readRegisteredSubscription(data)` function with the __subscriptionId__ to handle the existing subscription.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='65-91')
+    :markdown
+      ## Subscribe for notifications
+      RingCentral push notification supports multiple events notification. This means that we can subscribe for notifications of several different events such as when there is an incoming SMS, when a SMS message is deleted, when there is an incoming call etc. in a single subscription.
+
+      In this particular app, we are interested at instant SMS only. Thus, we subscribe for just one event type of `instant?type=SMS`.
+
+      Then we use the `platform.post()` function to call the __subscription__ API with the specified event type and the __deliveryMode__ required for Webhook.
+
+      After registered successfully, we parse the response to get the subscription Id and save it to the local file "subscriptionId.txt".
+
+      That is all we need to setup for the notification subscription using Webhook.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='93-121')
+    :markdown
+      ## Renew Webhook notification
+      In the other scenario, if we rerun the app and already had the __subscriptionId__. We will call the `readRegisteredSubscription(data)` to handle the existing subscription.
+
+      Currently, a registered Webhook subscription will expire after 7 days. When a subscription expires, it's status will be in `Suspended` and RingCentral server will stop sending notification to that subscriber.
+
+      We can either delete the `Suspended` subscription and create a new one, or just renew it. In this project, we choose to renew the subscription if it has expired.
+
+      __Important!__: In real application situation, where the notification subscription must be `Active` all the time. We need to implement a scheduler to check the subscription status and renew it in time before it gets expired.
+
+      That is all for the renew notification subscription using Webhook.
+
+  .step(data-title='Use Webhook', data-file='index.js', data-highlight='12-19')
+    :markdown
+      ## Receive Webhook POST message
+      Whenever there is an incoming SMS, RingCentral will send a notification to the subscriber via the provided Webhook address.
+
+      We just do a quick check to see if the POST url is our predefined "/webhooks" path. If it matches, then we call the `rc_server.handleWebhooksPost(req, res)` function to handle the request.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='33-52')
+    :markdown
+      ## Read the SMS message
+      Looking at the code on the right-hand side, you can ignore the validateToken part. That is for validating the token when we registered for the subscription.
+
+      When this function is called as a notification for an incoming SMS, we read the data buffer to get the SMS message.
+
+      Then we call the `parseMessage()` with the data to process the SMS message.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='147-157')
+    :markdown
+      ## Parse the SMS message
+      Now, we extract the phone number of the sender. We will use the number for sending a message back to the sender.
+
+      We also extract the message's subject, which is the text command in this scenario.
+
+      __Note__: Because we are testing with a RingCentral sandbox account, there is a watermark text attached to the text message. To work-around this in our demo, we suppress the watermark text before handling the command.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='158-197')
+    :markdown
+      ## Compose a reply message
+      We use the command syntax for creating an appropriated reply message.
+
+      If the command is "__?__" or "__help__", we reply with the instructions.
+
+      If the command has a slash "__/__", we detect if it is a request for getting currency symbols or for getting an exchange rate.
+
+      * For a SYMBOL request, we get the currency codes from the predefined `currencySymbols` table.
+
+      * For an exchange rate request, we use the base and the target currency codes and call "api.fixer.io" service to get the latest exchange rate.
+
+      If the text command does not match with our command syntax, we compose an error message.
+
+  .step(data-title='Use Webhook', data-file='webhook.js', data-highlight='199-208')
+    :markdown
+      ## Send a SMS message
+      We use the `platform.post()` function to call the SMS API with the specified parameters:
+
+      The `from` number is our RingCentral phone number specified in the environment file.
+
+      The `to` number is the sender's phone number we extract from the sender's SMS message
+
+      The `text` is the composed response we created in the previous step.
+
+      Our demo app is ready for test.
+
+      Just run `node index.js` and send a text message with "help" to the phone number you specified in the .env file
+
+      ### If you want to learn how to use PubNub notification channel, click the next step.
+
+  .step(data-title='Use PubNub', data-file='dotenv', data-highlight='12')
+    :markdown
+      ## Let's start with PubNub notification
+      To use PubNub for notification, we change the value of the DELIVERY_MODE_TRANSPORT_TYPE to "PubNub"
+
+      `DELIVERY_MODE_TRANSPORT_TYPE=PubNub`
+
+  .step(data-title='Use PubNub', data-file='index.js', data-highlight='21-24')
+    :markdown
+      ## Use PubNub notification
+
+      If the DELIVERY_MODE_TRANSPORT_TYPE is specified with "PubNub", we create a http server and load the __pubnub.js__ file accordingly.
+
+  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='8-21')
+    :markdown
+      ## Instantiate the RingCentral Node JS SDK
+      First, we create the SDK instance `rcsdk` and initialize it with the AppKey and appSecret.
+
+      Then we call the `platform()` function to get the instance of the platform component. The `platform` instance will be used later to login and call RingCentral APIs.
+
+      We also call the `rcsdk.createSubscription()` function to create a `subscription` instance and implement an event handler function to receive notification events.
+
+  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='23-38')
+    :markdown
+      ## Login RingCentral account
+      To login RingCentral account, we call the `platform.login()` function with the given account's username and password.
+
+  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='29-31')
+    :markdown
+      ## Implement notification subscription
+      After logged in successfully, we get ready to subscribe for PubNub notification so that we can receive incoming SMS messages.
+
+  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='40-48')
+    :markdown
+      ## Create notification subscription
+      Before creating a new subscription for notification, we may need to detect if we have created one earlier. This step is necessary because the app could be terminated and rerun for any reason.
+
+      When a push notification subscription is registered successfully, we will receive a response with the subscription ID. We will save the subscription ID locally (in this project we save it in the subscriptionId.txt file) so that we can use it to handle (renew, delete etc.) the registered subscription.
+
+      When we run the app for the first time, we don't have the __subscriptionId__ (or the file does not exists), we will call the `startPubNubSubscription()` function, where we will register for a new subscription.
+
+      When we rerun the app, we may already had the subscription registered previously. In that case, we read the __subscriptionId__ from the local file, then we will call the `readRegisteredSubscription(data)` function with the __subscriptionId__ to handle the existing subscription.
+
+  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='59-73')
+    :markdown
+      ## Subscribe for notifications
+      RingCentral push notification supports multiple events notification. This means that we can subscribe for notifications of several different events such as when there is an incoming SMS, when a SMS message is deleted, when there is an incoming call etc. in a single subscription.
+
+      In this particular app, we are interested at incoming SMS only. Thus, we subscribe for just one event type of `instant?type=SMS`.
+
+      Then we use the `platform.post()` function to call the __subscription__ API with the specified event type.
+
+      After registered successfully, we parse the response to get the subscription Id and save it to the local "subscriptionId.txt" file.
+
+      That is all we need to setup for the notification subscription with PubNub.
+
+  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='87-106')
+    :markdown
+      ## Renew PubNub notification
+      Currently, a registered PubNub subscription will expire after 15 minutes. When a subscription expires, it's status will be in `Suspended` and RingCentral server will stop sending notification to that subscriber. Fortunately, the Node JS SDK has an auto renewal feature so that we don't need to renew the subscription manually.
+
+      When using PubNub notification, if we rerun the app, any subscription created by this app earlier will not be valid for the new process anymore. Thus, we will need to detect the old registered subscription and delete them, then create new subscription for the new process.
+
+  .step(data-title='Use PubNub', data-file='pubnub.js', data-highlight='17-20')
+    :markdown
+      ## Receive PubNub notification message
+      Whenever there is an incoming SMS, RingCentral will send a notification to the subscriber and we'll get notified via this function.
+
+      Then we call the `parseMessage()` with the data to process the SMS message.
+
+      We will process the SMS message the same way as we did in the Use Webhook sections.
